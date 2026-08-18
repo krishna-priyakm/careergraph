@@ -362,3 +362,8 @@ The endpoint returns the connected graph data required by the frontend to displa
 ## Job Details
 
 ![Job Details](screenshots/job-details.png)
+
+---
+
+# 7. Demo
+![Careergraph Demo](https://drive.google.com/drive/folders/1Jvy2q9p5fTP_ed05zIctNbxE8JurYLTi?usp=drive_link)
