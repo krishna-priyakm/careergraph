@@ -25,8 +25,8 @@ Instead of treating a candidate, their skills, jobs, and companies as isolated r
 For example:
 
 Person → HAS_SKILL → Skill  
-Skill → REQUIRES ← Job  
-Job → OFFERS ← Company
+Job → REQUIRES → Skill  
+Company → OFFERS → Job
 
 This allows the application to answer relationship-based questions such as:
 
@@ -49,7 +49,7 @@ A graph database represents these relationships directly.
 
 CareerGraph uses the following relationship path:
 
-Person → Skill → Job → Company
+Person → Skill ← Job ← Company
 
 For example:
 
@@ -59,18 +59,19 @@ Person
   │ HAS_SKILL
   ▼
 Skill
-  │
+  ▲
   │ REQUIRES
-  ▼
-Job
   │
+Job
+  ▲
   │ OFFERS
-  ▼
+  │
 Company
+```
 
+This graph structure makes it easier to traverse relationships between candidates, skills, jobs, and companies.
 
 ---
-
 
 # 3. Data Model
 
