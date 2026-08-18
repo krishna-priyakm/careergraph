@@ -22,13 +22,12 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
 
-  
-
   const [error, setError] = useState("");
 
   // ---------------------------------------
   // Load all people
   // ---------------------------------------
+
   useEffect(() => {
     const loadPeople = async () => {
       try {
@@ -49,8 +48,9 @@ function Dashboard() {
   }, []);
 
   // ---------------------------------------
-  // Load skills and recommendations
+  // Load dashboard data
   // ---------------------------------------
+
   useEffect(() => {
     if (!selectedPerson) return;
 
@@ -63,22 +63,24 @@ function Dashboard() {
         setSelectedJob(null);
         setJobDetails(null);
 
-    const [
-        skillsResponse,
-        recommendationsResponse,
-        graphResponse,
-    ] = await Promise.all([
-        getPersonSkills(selectedPerson),
-        getRecommendations(selectedPerson),
-        getCareerGraph(selectedPerson),
-    ]);
+        const [
+          skillsResponse,
+          recommendationsResponse,
+          graphResponse,
+        ] = await Promise.all([
+          getPersonSkills(selectedPerson),
+          getRecommendations(selectedPerson),
+          getCareerGraph(selectedPerson),
+        ]);
+
+        console.log(
+          "Career graph response:",
+          graphResponse
+        );
 
         setSkills(skillsResponse.data);
         setRecommendations(recommendationsResponse.data);
         setCareerGraph(graphResponse.data);
-
-        setSkills(skillsResponse.data);
-        setRecommendations(recommendationsResponse.data);
       } catch (error) {
         console.error(
           "Error loading dashboard:",
@@ -99,11 +101,11 @@ function Dashboard() {
   // ---------------------------------------
   // View job details
   // ---------------------------------------
+
   const handleViewDetails = async (job) => {
     try {
       setSelectedJob(job);
       setJobDetails(null);
-      setCareerGraph(null);
       setDetailsLoading(true);
       setError("");
 
@@ -130,6 +132,7 @@ function Dashboard() {
   // ---------------------------------------
   // Close job details
   // ---------------------------------------
+
   const handleCloseDetails = () => {
     setSelectedJob(null);
     setJobDetails(null);
@@ -165,38 +168,46 @@ function Dashboard() {
       {/* CANDIDATE SELECTOR */}
       {/* ---------------------------------- */}
 
-        <section className="candidate-section">
-    <div>
-        <label htmlFor="candidate">
-        Select candidate
-        </label>
+      <section className="candidate-section">
+        <div>
+          <label htmlFor="candidate">
+            Select candidate
+          </label>
 
-        <p className="candidate-hint">
-        Choose a candidate to explore their career graph
-        </p>
-    </div>
+          <p className="candidate-hint">
+            Choose a candidate to explore
+            their career graph
+          </p>
+        </div>
 
-    <select
-        id="candidate"
-        value={selectedPerson}
-        onChange={(event) => {
-        setSelectedPerson(event.target.value);
-        }}
-    >
-        <option value="" disabled>
-        Select a candidate
-        </option>
-
-        {people.map((person) => (
-        <option
-            key={person.id}
-            value={person.id}
+        <select
+          id="candidate"
+          value={selectedPerson}
+          onChange={(event) => {
+            setSelectedPerson(
+              event.target.value
+            );
+          }}
         >
-            {person.name} — {person.experience} years experience
-        </option>
-        ))}
-    </select>
-    </section>
+          <option
+            value=""
+            disabled
+          >
+            Select a candidate
+          </option>
+
+          {people.map((person) => (
+            <option
+              key={person.id}
+              value={person.id}
+            >
+              {person.name} —{" "}
+              {person.experience} years
+              experience
+            </option>
+          ))}
+        </select>
+      </section>
 
       {/* ---------------------------------- */}
       {/* ERROR */}
@@ -218,6 +229,7 @@ function Dashboard() {
         </div>
       ) : (
         <>
+
           {/* -------------------------------- */}
           {/* STATISTICS */}
           {/* -------------------------------- */}
@@ -225,7 +237,9 @@ function Dashboard() {
           <section className="stats">
 
             <div className="stat-card">
-              <span>Skills</span>
+              <span>
+                Skills
+              </span>
 
               <strong>
                 {skills.length}
@@ -301,165 +315,189 @@ function Dashboard() {
               </div>
             )}
 
-            </section>
-            
-            <section className="graph-section">
+          </section>
 
-    <div className="section-heading">
-        <div>
-        <p className="eyebrow">
-            CAREER GRAPH
-        </p>
+          {/* -------------------------------- */}
+          {/* CAREER GRAPH */}
+          {/* -------------------------------- */}
 
-        <h2>
-            Your career connections
-        </h2>
-        </div>
+          <section className="graph-section">
 
-        <span>
-        Powered by CognoDB
-        </span>
-    </div>
+            <div className="section-heading">
 
-    {careerGraph ? (
-        <div className="graph-container">
+              <div>
+                <p className="eyebrow">
+                  CAREER GRAPH
+                </p>
 
-        {/* Person */}
+                <h2>
+                  Your career connections
+                </h2>
+              </div>
 
-        <div className="graph-node person-node">
-            <span className="node-type">
-            PERSON
-            </span>
-
-            <strong>
-            {careerGraph.person.name}
-            </strong>
-
-            <small>
-            {careerGraph.person.experience} years
-            experience
-            </small>
-        </div>
-
-        <div className="graph-arrow">
-            ↓ HAS_SKILL
-        </div>
-
-        {/* Skills */}
-
-        <div className="graph-group">
-
-            <p>SKILLS</p>
-
-            <div className="graph-items">
-
-            {careerGraph.skills.map(
-                (skill) => (
-                <div
-                    className="graph-node skill-node"
-                    key={skill.id}
-                >
-                    <span className="node-type">
-                    SKILL
-                    </span>
-
-                    <strong>
-                    {skill.name}
-                    </strong>
-
-                    <small>
-                    {skill.category}
-                    </small>
-                </div>
-                )
-            )}
+              <span>
+                Powered by CognoDB
+              </span>
 
             </div>
 
-        </div>
+            {careerGraph ? (
 
-        <div className="graph-arrow">
-            ↓ REQUIRES
-        </div>
+              <div className="graph-container">
 
-        {/* Jobs */}
+                {/* Person */}
 
-        <div className="graph-group">
+                <div className="graph-node person-node">
 
-            <p>RELATED JOBS</p>
+                  <span className="node-type">
+                    PERSON
+                  </span>
 
-            <div className="graph-items">
+                  <strong>
+                    {careerGraph.person.name}
+                  </strong>
 
-            {careerGraph.jobs.map(
-                (job) => (
-                <div
-                    className="graph-node job-node"
-                    key={job.id}
-                >
-                    <span className="node-type">
-                    JOB
-                    </span>
+                  <small>
+                    {careerGraph.person.experience}{" "}
+                    years experience
+                  </small>
 
-                    <strong>
-                    {job.title}
-                    </strong>
-
-                    <small>
-                    {job.experienceLevel}
-                    </small>
                 </div>
-                )
+
+                <div className="graph-arrow">
+                  ↓ HAS_SKILL
+                </div>
+
+                {/* Skills */}
+
+                <div className="graph-group">
+
+                  <p>
+                    SKILLS
+                  </p>
+
+                  <div className="graph-items">
+
+                    {careerGraph.skills.map(
+                      (skill) => (
+                        <div
+                          className="graph-node skill-node"
+                          key={skill.id}
+                        >
+
+                          <span className="node-type">
+                            SKILL
+                          </span>
+
+                          <strong>
+                            {skill.name}
+                          </strong>
+
+                          <small>
+                            {skill.category}
+                          </small>
+
+                        </div>
+                      )
+                    )}
+
+                  </div>
+
+                </div>
+
+                <div className="graph-arrow">
+                  ↓ REQUIRES
+                </div>
+
+                {/* Jobs */}
+
+                <div className="graph-group">
+
+                  <p>
+                    RELATED JOBS
+                  </p>
+
+                  <div className="graph-items">
+
+                    {careerGraph.jobs.map(
+                      (job) => (
+                        <div
+                          className="graph-node job-node"
+                          key={job.id}
+                        >
+
+                          <span className="node-type">
+                            JOB
+                          </span>
+
+                          <strong>
+                            {job.title}
+                          </strong>
+
+                          <small>
+                            {job.experienceLevel}
+                          </small>
+
+                        </div>
+                      )
+                    )}
+
+                  </div>
+
+                </div>
+
+                <div className="graph-arrow">
+                  ↓ OFFERS
+                </div>
+
+                {/* Companies */}
+
+                <div className="graph-group">
+
+                  <p>
+                    COMPANIES
+                  </p>
+
+                  <div className="graph-items">
+
+                    {careerGraph.companies.map(
+                      (company) => (
+                        <div
+                          className="graph-node company-node"
+                          key={company.id}
+                        >
+
+                          <span className="node-type">
+                            COMPANY
+                          </span>
+
+                          <strong>
+                            {company.name}
+                          </strong>
+
+                          <small>
+                            {company.location}
+                          </small>
+
+                        </div>
+                      )
+                    )}
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            ) : (
+
+              <div className="empty-state">
+                No career graph data available.
+              </div>
+
             )}
 
-            </div>
-
-        </div>
-
-        <div className="graph-arrow">
-            ↓ OFFERS
-        </div>
-
-        {/* Companies */}
-
-        <div className="graph-group">
-
-            <p>COMPANIES</p>
-
-            <div className="graph-items">
-
-            {careerGraph.companies.map(
-                (company) => (
-                <div
-                    className="graph-node company-node"
-                    key={company.id}
-                >
-                    <span className="node-type">
-                    COMPANY
-                    </span>
-
-                    <strong>
-                    {company.name}
-                    </strong>
-
-                    <small>
-                    {company.location}
-                    </small>
-                </div>
-                )
-            )}
-
-            </div>
-
-        </div>
-
-        </div>
-    ) : (
-        <div className="empty-state">
-        No career graph data available.
-        </div>
-    )}
-
-    </section>
+          </section>
 
           {/* -------------------------------- */}
           {/* JOB RECOMMENDATIONS */}
@@ -488,10 +526,13 @@ function Dashboard() {
             </div>
 
             {recommendations.length === 0 ? (
+
               <div className="empty-state">
                 No matching jobs found.
               </div>
+
             ) : (
+
               <div className="job-grid">
 
                 {recommendations.map(
@@ -533,9 +574,7 @@ function Dashboard() {
                       <div className="match">
 
                         <span>
-                          {
-                            job.matchPercentage
-                          }%
+                          {job.matchPercentage}%
                           {" "}
                           skill match
                         </span>
@@ -572,6 +611,7 @@ function Dashboard() {
                 )}
 
               </div>
+
             )}
 
           </section>
@@ -581,6 +621,7 @@ function Dashboard() {
           {/* -------------------------------- */}
 
           {selectedJob && (
+
             <section className="details-section">
 
               {detailsLoading ? (
@@ -632,9 +673,7 @@ function Dashboard() {
                   <div className="details-match">
 
                     <strong>
-                      {
-                        jobDetails.matchPercentage
-                      }%
+                      {jobDetails.matchPercentage}%
                     </strong>
 
                     <span>
@@ -716,13 +755,10 @@ function Dashboard() {
                   <div className="required-summary">
 
                     <strong>
-                      {
-                        jobDetails.matchedSkills
-                      }{" "}
+                      {jobDetails.matchedSkills}
+                      {" "}
                       of{" "}
-                      {
-                        jobDetails.totalRequiredSkills
-                      }
+                      {jobDetails.totalRequiredSkills}
                     </strong>
 
                     <span>
@@ -737,6 +773,7 @@ function Dashboard() {
               ) : null}
 
             </section>
+
           )}
 
         </>
