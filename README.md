@@ -69,247 +69,296 @@ Job
 Company
 
 
+---
+
+---
+
 # 3. Data Model
 
-CareerGraph uses the following main entities:
+CareerGraph represents career-related information as connected nodes and relationships in CognoDB.
 
-| Entity | Description |
-|---|---|
-| **Person** | Represents a candidate/user |
-| **Skill** | Represents a technical skill |
-| **Job** | Represents a job opportunity |
-| **Company** | Represents a company offering a job |
+## Nodes
 
-### Relationships
+| Node | Description |
+|------|-------------|
+| `Person` | Represents a candidate/user |
+| `Skill` | Represents a skill possessed by or relevant to a candidate |
+| `Job` | Represents a job opportunity |
+| `Company` | Represents a company offering a job |
 
-| Relationship | Meaning |
-|---|---|
+## Relationships
+
+| Relationship | Description |
+|--------------|-------------|
 | `HAS_SKILL` | Connects a person to a skill |
-| `REQUIRES` | Connects a job to the skills required for that job |
+| `REQUIRES` | Connects a job to a required skill |
 | `OFFERS` | Connects a company to a job |
 
-### Data Model Diagram
+## Data Model Diagram
+
+```mermaid
+graph LR
+    P[Person]
+    S[Skill]
+    J[Job]
+    C[Company]
+
+    P -->|HAS_SKILL| S
+    J -->|REQUIRES| S
+    C -->|OFFERS| J
+```
+
+The main relationship path used by CareerGraph is:
 
 ```text
-                    HAS_SKILL
-       ┌─────────────────────────────┐
-       │                             ▼
-   Person ───────────────────────> Skill
-                                      │
-                                      │ REQUIRED BY
-                                      ▼
-                                     Job
-                                      │
-                                      │ OFFERED BY
-                                      ▼
-                                   Company
+Person → Skill ← Job ← Company
+```
 
-The main graph traversal used by CareerGraph is:
+This structure allows the application to traverse relationships between a candidate's skills, relevant jobs, and companies.
 
-Person → Skill → Job → Company
+---
 
-This structure allows the application to identify career opportunities based on the skills associated with a candidate.
+# 4. Setup and Run Instructions
 
-4. Setup and Run Instructions
-Prerequisites
+## Prerequisites
 
 Install the following before running the application:
 
-Node.js
-npm
-Git
-CognoDB
-4.1 Clone the Repository
+- Node.js
+- npm
+- Git
+- CognoDB
+
+## Clone the Repository
+
+```bash
 git clone https://github.com/krishna-priyakm/careergraph.git
 cd careergraph
-4.2 Create the CognoDB Instance
+```
+
+## Create the CognoDB Instance
 
 CareerGraph uses CognoDB as its graph database.
 
-Create a CognoDB instance and obtain the database connection details.
+1. Open the CognoDB service.
+2. Create a new CognoDB instance.
+3. Enter a name for the instance.
+4. Select the required configuration and region.
+5. Create the instance.
+6. Wait until the instance is ready.
+7. Copy the connection details provided by CognoDB.
+8. Keep the database URI, username, and password for configuring the server.
 
-The required information is:
+The application connects to CognoDB using its Neo4j-compatible Bolt interface.
 
-Database URI
-Username
-Password
+Example connection URI:
 
-For a local CognoDB instance, the Bolt connection can be configured as:
-
+```text
 bolt://localhost:7687
+```
 
-Make sure the CognoDB instance is running before starting the CareerGraph server.
+## Server Setup
 
-4.3 Configure the Server
+Move to the server directory:
 
-Navigate to the server directory:
-
+```bash
 cd server
+```
 
 Install the dependencies:
 
+```bash
 npm install
+```
 
-Create a .env file in the server directory and configure the CognoDB connection.
+Create a `.env` file inside the `server` directory:
 
-Example:
-
-COGNODB_URI=bolt://localhost:7687
-COGNODB_USERNAME=cognodb
-COGNODB_PASSWORD=your_password
+```env
+COGNODB_URI=<your-cognodb-uri>
+COGNODB_USERNAME=<your-cognodb-username>
+COGNODB_PASSWORD=<your-cognodb-password>
 PORT=5000
+```
 
-Replace the values with the credentials and connection details of your CognoDB instance.
+Replace the placeholder values with the credentials of your CognoDB instance.
 
-4.4 Configure the Client
+Do not commit the `.env` file to GitHub.
 
-Open another terminal and navigate to the client directory:
+## Client Setup
 
+Open another terminal and move to the client directory:
+
+```bash
 cd client
+```
 
 Install the dependencies:
 
+```bash
 npm install
-4.5 Start the Server
+```
 
-From the server directory:
+## Run the Server
 
+From the `server` directory:
+
+```bash
 npm start
+```
 
-The Express backend starts and provides the APIs used by the React application.
+The Express server starts and connects to the CognoDB database.
 
-4.6 Start the Client
+## Run the Client
 
-From the client directory:
+From the `client` directory:
 
+```bash
 npm start
+```
 
-The React application will start in the browser using the development server URL.
+Open the URL displayed by the React development server in your browser.
 
-5. Main Queries Explained
+---
 
-CareerGraph uses Cypher queries to traverse the graph and retrieve connected career information.
+# 5. Main Queries Explained
 
-5.1 Find a Candidate's Skills
+CareerGraph uses Cypher queries to traverse the connected career data stored in CognoDB.
 
-The application first retrieves the skills associated with a selected candidate.
+## 5.1 Find a Candidate's Skills
 
-MATCH (p:Person {id: $personId})-[:HAS_SKILL]->(s:Skill)
+```cypher
+MATCH (p:Person)-[:HAS_SKILL]->(s:Skill)
+WHERE p.id = $personId
 RETURN p, s
+```
 
-This query follows:
+This query retrieves the skills associated with a selected candidate.
 
+The graph traversal is:
+
+```text
 Person → HAS_SKILL → Skill
+```
 
-It is used to display the candidate's current skills.
+The result is used to display the candidate's current skills.
 
-5.2 Find Jobs Related to Candidate Skills
+## 5.2 Find Jobs Based on Candidate Skills
 
-The application can traverse from a candidate to their skills and then to jobs requiring those skills.
-
-MATCH (p:Person {id: $personId})-[:HAS_SKILL]->(s:Skill)<-[:REQUIRES]-(j:Job)
+```cypher
+MATCH (p:Person)-[:HAS_SKILL]->(s:Skill)<-[:REQUIRES]-(j:Job)
+WHERE p.id = $personId
 RETURN DISTINCT j
+```
 
-This follows:
+This query finds jobs that require skills possessed by the selected candidate.
 
+The graph traversal is:
+
+```text
 Person → Skill ← Job
+```
 
-It identifies jobs that have requirements matching the candidate's existing skills.
+This allows CareerGraph to identify career opportunities related to the candidate's existing skills.
 
-5.3 Find Companies Offering the Jobs
+## 5.3 Find Companies Offering Matching Jobs
 
-The graph can be traversed further from the candidate's skills to jobs and then to companies.
-
-MATCH (p:Person {id: $personId})-[:HAS_SKILL]->(s:Skill)<-[:REQUIRES]-(j:Job)<-[:OFFERS]-(c:Company)
+```cypher
+MATCH (p:Person)-[:HAS_SKILL]->(s:Skill)<-[:REQUIRES]-(j:Job)<-[:OFFERS]-(c:Company)
+WHERE p.id = $personId
 RETURN DISTINCT j, c
+```
 
-The traversal is:
+This query connects a candidate's skills to relevant jobs and the companies offering those jobs.
 
+The graph traversal is:
+
+```text
 Person → Skill ← Job ← Company
+```
 
-This allows the application to display companies associated with relevant career opportunities.
+## 5.4 Find Missing Skills for a Job
 
-5.4 Calculate Job Skill Match
-
-CareerGraph compares the skills of a candidate with the skills required by a selected job.
-
-Conceptually, the application calculates:
-
-Skill Match Percentage =
-(Number of Required Skills the Candidate Has
- / Total Required Skills)
-× 100
-
-For example, if a job requires 5 skills and the candidate has 4 of them:
-
-(4 / 5) × 100 = 80%
-
-The application displays this percentage to help the candidate understand how closely their current skills match a job.
-
-5.5 Identify Missing Skills
-
-The graph can also be used to identify skills required by a job that the candidate does not currently have.
-
-MATCH (j:Job {id: $jobId})-[:REQUIRES]->(s:Skill)
-WHERE NOT EXISTS {
-    MATCH (p:Person {id: $personId})-[:HAS_SKILL]->(s)
-}
+```cypher
+MATCH (j:Job)-[:REQUIRES]->(s:Skill)
+WHERE j.id = $jobId
+  AND NOT EXISTS {
+    MATCH (p:Person)-[:HAS_SKILL]->(s)
+    WHERE p.id = $personId
+  }
 RETURN s
+```
 
-This query returns the skills that are required by the selected job but are not currently associated with the candidate.
+This query identifies the skills required for a selected job that are not currently present in the candidate's skill set.
 
-These skills can be treated as potential areas for learning or improvement.
+The result helps the candidate understand which skills they need to develop for the selected job.
 
-5.6 Retrieve the Candidate Graph
+## 5.5 Calculate Skill Match
 
-CareerGraph provides a graph API for retrieving the connected graph of a candidate.
+```cypher
+MATCH (p:Person)-[:HAS_SKILL]->(s:Skill),
+      (j:Job)-[:REQUIRES]->(required:Skill)
+WHERE p.id = $personId
+  AND j.id = $jobId
+WITH j,
+     COUNT(DISTINCT CASE
+       WHEN s.name = required.name THEN required
+     END) AS matchedSkills,
+     COUNT(DISTINCT required) AS totalRequiredSkills
+RETURN j,
+       matchedSkills,
+       totalRequiredSkills,
+       CASE
+         WHEN totalRequiredSkills = 0 THEN 0
+         ELSE ROUND((100.0 * matchedSkills) / totalRequiredSkills, 2)
+       END AS matchPercentage
+```
 
+This query compares the candidate's existing skills with the skills required for a selected job.
+
+It returns:
+
+- Number of matched skills
+- Total required skills
+- Skill match percentage
+
+The match percentage is used by CareerGraph to show how closely a candidate's skills match a job.
+
+## 5.6 Retrieve the Candidate Graph
+
+CareerGraph provides an API endpoint for retrieving the graph associated with a candidate.
+
+```text
 GET /api/people/P001/graph
+```
 
-For example:
+For example, `P001` represents a candidate in the application.
 
-/api/people/P001/graph
+The endpoint returns the connected graph data required by the frontend to display the candidate's career connections.
 
-The endpoint returns the graph data associated with the candidate, including connected skills and career relationships.
+---
 
-The returned graph is used by the frontend to visualize the candidate's career connections.
+# 6. Screenshots of the UI
 
-6. Screenshots of the UI
-6.1 CareerGraph Dashboard
+## Candidate Selection
 
+![Candidate Selection](screenshots/candidate-selection.png)
 
+## Career Dashboard
 
+![Career Dashboard](screenshots/dashboard.png)
 
-The dashboard allows the user to select a candidate and explore their career information.
+## Job Recommendations
 
-6.2 Candidate Skills
+![Job Recommendations](screenshots/job-recommendations.png)
 
+## Skill Gap Analysis
 
+![Skill Gap Analysis](screenshots/skill-gap.png)
 
+## Career Graph Visualization
 
-This view displays the skills associated with the selected candidate.
+![Career Graph Visualization](screenshots/career-graph.png)
 
-6.3 Job Recommendations
+## Job Details
 
-
-
-
-This view displays jobs connected to the candidate's existing skills and provides the corresponding skill-match information.
-
-6.4 Missing Skills
-
-
-
-
-This view shows the skills that the candidate needs to develop for a selected job.
-
-6.5 Graph Visualization
-
-
-
-
-The graph visualization shows the relationships between the candidate, skills, jobs, and companies.
-
-The visualization represents the connected career path:
-
-Person → Skill → Job → Company
+![Job Details](screenshots/job-details.png)
