@@ -365,5 +365,5 @@ The endpoint returns the connected graph data required by the frontend to displa
 
 ---
 
-# 7. Demo
-![Careergraph Demo](https://drive.google.com/drive/folders/1Jvy2q9p5fTP_ed05zIctNbxE8JurYLTi?usp=drive_link)
+# 7. CareerGraph Demo
+https://drive.google.com/drive/folders/1Jvy2q9p5fTP_ed05zIctNbxE8JurYLTi?usp=drive_link
