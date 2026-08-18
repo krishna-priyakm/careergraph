@@ -71,7 +71,6 @@ Company
 
 ---
 
----
 
 # 3. Data Model
 
